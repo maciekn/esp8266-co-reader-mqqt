@@ -17,6 +17,9 @@
 
 int tx_pin = D1;
 int rx_pin = D2;
+const unsigned long SEND_THROTTLE = 60 * 60 * 1000; // 60 mins
+
+
 SoftwareSerial InputSerial(rx_pin, tx_pin);
 
 const ushort collector_temp_id = 0x1701;  // alternative: 0x1742?
@@ -161,26 +164,34 @@ int decodeInput(ushort* buffer, int len, Payload* dest) {
     return noOfValues;
 }
 
+void uploadData(const Payload& payload) {
+    Serial.println("Sending data to ThingSpeak");
+    ThingSpeak.setField(1, payload.water_temp);
+    ThingSpeak.setField(2, payload.collector_temp);
+    int httpCode = ThingSpeak.writeFields(atol(myChannelNumber), myWriteAPIKey);
+    if (httpCode == 200) {
+        Serial.println("Channel write successful.");
+    } else {
+        Serial.println("Problem writing to channel. HTTP error code " +
+                       String(httpCode));
+    }
+}
+
 ushort buffer[300];
+unsigned long last_sent = ULONG_MAX;
 
 CoReader coReader = CoReader(Serial, Serial);
 
 void loop() {
     int len = coReader.readTo(buffer, 300);
-
     if (len > 0) {
         Payload data;
         if (decodeInput(buffer, len, &data)) {
-            Serial.println("Sending data to ThingSpeak");
-            ThingSpeak.setField(1, data.water_temp);
-            ThingSpeak.setField(2, data.collector_temp);
-            int httpCode =
-                ThingSpeak.writeFields(atol(myChannelNumber), myWriteAPIKey);
-            if (httpCode == 200) {
-                Serial.println("Channel write successful.");
-            } else {
-                Serial.println("Problem writing to channel. HTTP error code " +
-                               String(httpCode));
+            unsigned long current_timestamp = millis();
+            if ((last_sent + SEND_THROTTLE) < current_timestamp ||
+                last_sent > current_timestamp) {
+                uploadData(data);
+                last_sent = current_timestamp;
             }
         }
     }

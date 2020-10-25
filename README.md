@@ -1,6 +1,8 @@
 # Description
-This simple app is intended to read from solar driver via Serial protocol and then push it to ThingSpeak
+This simple app is intended to read from solar driver via Serial protocol and then push it to ThingSpeak. By default app sends at most one record per 1 hour (can be configured by `SEND_THROTTLE` constant).
+
 The app also supports debug logging via Hardware Serial protocol.
+
 
 !!!Currently is heavily WIP!!!
 
