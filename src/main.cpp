@@ -1,10 +1,15 @@
-#include <ArduinoJson.h>
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include <ESP8266WiFi.h>
+
+// Arduino framework
 #include <LittleFS.h>
 #include <SoftwareSerial.h>
+
+// ESP8266 details
+#include <ESP8266HTTPUpdateServer.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+
+// External libs
+#include <ArduinoJson.h>
 #include <ThingSpeak.h>
 #include <WiFiManager.h>
 
@@ -30,15 +35,11 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 bool shouldSaveConfig;
 
-void saveConfigCallback() {
-    shouldSaveConfig = true;
-}
+void saveConfigCallback() { shouldSaveConfig = true; }
 
 void loadStoredData() {
     Serial.println("Opening file");
     if (LittleFS.exists(CONFIG_LOCATION)) {
-
-
         File configFile = LittleFS.open(CONFIG_LOCATION, "r");
         Serial.println("File opened");
         if (configFile) {
@@ -70,7 +71,7 @@ void initalizeWiFiManager() {
     wifiManager.addParameter(&custom_api_key);
 
     wifiManager.autoConnect("AutoConnectAP");
-    
+
     delay(500);
 
     strcpy(myChannelNumber, custom_channel_no.getValue());
@@ -90,9 +91,11 @@ void setup() {
     pinMode(0, INPUT_PULLUP);
 
     Serial.begin(9600);
-    while (!Serial);
+    while (!Serial)
+        ;
     InputSerial.begin(9600);
-    while (!InputSerial);
+    while (!InputSerial)
+        ;
 
     LittleFS.begin();
 
@@ -126,8 +129,7 @@ void setup() {
 
     httpUpdater.setup(&server);
 
-	server.begin();
-
+    server.begin();
 }
 
 struct Payload {
