@@ -1,6 +1,7 @@
 #include <ArduinoJson.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266WiFi.h>
 #include <LittleFS.h>
 #include <SoftwareSerial.h>
@@ -25,6 +26,7 @@ char myWriteAPIKey[34];
 
 WiFiClient espClient;
 ESP8266WebServer server(80);
+ESP8266HTTPUpdateServer httpUpdater;
 
 bool shouldSaveConfig;
 
@@ -122,6 +124,10 @@ void setup() {
 
     ThingSpeak.begin(espClient);
 
+    httpUpdater.setup(&server);
+
+	server.begin();
+
 }
 
 struct Payload {
@@ -176,4 +182,5 @@ void loop() {
             }
         }
     }
+    server.handleClient();
 }
