@@ -180,7 +180,7 @@ void uploadData(const Payload& payload) {
 ushort buffer[300];
 unsigned long last_sent = ULONG_MAX;
 
-CoReader coReader = CoReader(Serial, Serial);
+CoReader coReader = CoReader(InputSerial, Serial);
 
 void loop() {
     int len = coReader.readTo(buffer, 300);
