@@ -1,4 +1,4 @@
-#include "dataparser.h"
+#include "inputanalyzer.h"
 
 boolean handleWaterTemp(ushort identifier, ushort value, Payload& payload) {
     payload.water_temp = (short)value;
@@ -16,12 +16,12 @@ boolean handleHour(ushort identifier, ushort value, Payload& payload) {
     return true;
 }
 
-Parser::Parser(InputDecoder<Payload> _decoder) : decoder(_decoder) {
+InputAnalyzer::InputAnalyzer(InputDecoder<Payload> _decoder) : decoder(_decoder) {
     decoder.registerCustomHandler(collector_temp_id, handleCollectorTemp);
     decoder.registerCustomHandler(timestamp_id, handleHour);
     decoder.registerCustomHandler(water_temp_id, handleWaterTemp);
 }
 
-int Parser::serve(Payload& data) {
+int InputAnalyzer::serve(Payload& data) {
     return decoder.serve(data);
 }

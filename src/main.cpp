@@ -12,7 +12,7 @@
 #include <ThingSpeak.h>
 #include <WiFiManager.h>
 
-#include "dataparser.h"
+#include "inputanalyzer.h"
 
 #define DEVMODE 1
 
@@ -30,7 +30,7 @@ CoReader coReader = CoReader(InputSerial, Serial);
 #endif
 
 InputDecoder<Payload> decoder(coReader);
-Parser parser(decoder);
+InputAnalyzer analyzer(decoder);
 
 const char CONFIG_LOCATION[] = "/config.json";
 
@@ -164,7 +164,7 @@ unsigned long last_sent = ULONG_MAX;
 
 void loop() {
     Payload p;
-    if (parser.serve(p) != 0) {
+    if (analyzer.serve(p) != 0) {
         unsigned long current_timestamp = millis();
         if ((last_sent + SEND_THROTTLE) < current_timestamp ||
             last_sent > current_timestamp) {

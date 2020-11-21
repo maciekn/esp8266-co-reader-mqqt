@@ -1,5 +1,5 @@
-#ifndef DATAPARSER_H_
-#define DATAPARSER_H_
+#ifndef INPUTANALYZER_H_
+#define INPUTANALYZER_H_
 
 #include "inputdecoder.h"
 
@@ -22,11 +22,11 @@ struct Payload {
     }
 };
 
-class Parser {
+class InputAnalyzer {
     private:
     InputDecoder<Payload> decoder;
     public:
-    Parser(InputDecoder<Payload> _decoder);
+    InputAnalyzer(InputDecoder<Payload> _decoder);
     int serve(Payload& data);
 };
 
