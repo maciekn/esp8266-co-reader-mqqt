@@ -1,6 +1,3 @@
-
-#include <map>
-
 // Arduino framework
 #include <LittleFS.h>
 #include <SoftwareSerial.h>
@@ -15,9 +12,9 @@
 #include <ThingSpeak.h>
 #include <WiFiManager.h>
 
-#include "coreader.h"
+#include "dataparser.h"
 
-// #define DEVMODE 1
+#define DEVMODE 1
 
 int tx_pin = D1;
 int rx_pin = D2;
@@ -32,10 +29,8 @@ SoftwareSerial InputSerial(rx_pin, tx_pin);
 CoReader coReader = CoReader(InputSerial, Serial);
 #endif
 
-const ushort collector_temp_id = 0x1701;  // alternative: 0x1742?
-const ushort water_temp_id = 0x1702;      // alternative: 0x1743?
-const ushort timestamp_id = 0x1620;
-const ushort sth_else_id = 0x1B98;
+InputDecoder<Payload> decoder(coReader);
+Parser parser(decoder);
 
 const char CONFIG_LOCATION[] = "/config.json";
 
@@ -98,83 +93,6 @@ void cleanData() {
     wifiManager.resetSettings();
 }
 
-template <class T>
-class InputHandler {
-   public:
-    ushort identifier;
-    boolean (*inputCallback)(ushort identifier, ushort value, T& payload);
-};
-
-template <class T>
-class InputDecoder {
-   private:
-    CoReader& reader;
-    ushort buffer[300];
-    std::map<ushort, InputHandler<T>> inputHandlers;
-
-   public:
-    InputDecoder<T>(CoReader& coReader) : reader(coReader) {}
-
-    void registerHandler(ushort id,
-                         boolean (*handler)(ushort identifier, ushort value,
-                                            T& payload)) {
-        InputHandler<T>* hanlderCpy = new InputHandler<T>();
-        hanlderCpy->identifier = id;
-        hanlderCpy->inputCallback = handler;
-        inputHandlers.insert(
-            std::pair<ushort, InputHandler<T>>(id, *hanlderCpy));
-    }
-
-    int serve(T& data) {
-        int len = reader.readTo(buffer, 300);
-        int noOfValues = 0;
-        if (len > 0) {
-            for (int i = 0; i < (len - 1); i += 2) {
-                auto it = inputHandlers.find(buffer[i]);
-                if (it != inputHandlers.end()) {
-                    if (it->second.inputCallback(buffer[i], buffer[i + 1],
-                                                 data)) {
-                        noOfValues++;
-                    }
-                }
-            }
-        }
-        return noOfValues;
-    }
-};
-
-struct Payload {
-    short collector_temp = 0;
-    short water_temp = 0;
-    ushort hour = 0;
-    ushort min = 0;
-
-    void zero() {
-        collector_temp = 0;
-        water_temp = 0;
-        hour = 0;
-        min = 0;
-    }
-};
-
-boolean handleWaterTemp(ushort identifier, ushort value, Payload& payload) {
-    payload.water_temp = (short)value;
-    return true;
-}
-
-boolean handleCollectorTemp(ushort identifier, ushort value, Payload& payload) {
-    payload.collector_temp = (short)value;
-    return true;
-}
-
-boolean handleHour(ushort identifier, ushort value, Payload& payload) {
-    payload.hour = (value & 0xFF00) >> 8;
-    payload.min = value & 0xFF;
-    return true;
-}
-
-InputDecoder<Payload> decoder(coReader);
-
 void setup() {
     pinMode(rx_pin, INPUT_PULLUP);
     pinMode(tx_pin, INPUT_PULLUP);
@@ -220,9 +138,6 @@ void setup() {
     httpUpdater.setup(&server);
 
     server.begin();
-    decoder.registerHandler(collector_temp_id, handleCollectorTemp);
-    decoder.registerHandler(timestamp_id, handleHour);
-    decoder.registerHandler(water_temp_id, handleWaterTemp);
 }
 
 void uploadData(const Payload& payload) {
@@ -249,7 +164,7 @@ unsigned long last_sent = ULONG_MAX;
 
 void loop() {
     Payload p;
-    if (decoder.serve(p) != 0) {
+    if (parser.serve(p) != 0) {
         unsigned long current_timestamp = millis();
         if ((last_sent + SEND_THROTTLE) < current_timestamp ||
             last_sent > current_timestamp) {
