@@ -136,8 +136,8 @@ void setup() {
 }
 
 struct Payload {
-    ushort collector_temp = 0;
-    ushort water_temp = 0;
+    short collector_temp = 0;
+    short water_temp = 0;
     ushort hour = 0;
     ushort min = 0;
 };
@@ -147,11 +147,11 @@ int decodeInput(ushort* buffer, int len, Payload* dest) {
     for (int i = 0; i < (len - 1); i += 2) {
         switch (buffer[i]) {
             case collector_temp_id:
-                dest->collector_temp = buffer[i + 1];
+                dest->collector_temp = (short)buffer[i + 1];
                 noOfValues++;
                 break;
             case water_temp_id:
-                dest->water_temp = buffer[i + 1];
+                dest->water_temp = (short)buffer[i + 1];
                 noOfValues++;
                 break;
             case timestamp_id:
