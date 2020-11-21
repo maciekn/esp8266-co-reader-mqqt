@@ -15,12 +15,20 @@
 
 #include "coreader.h"
 
+// #define DEVMODE 1
+
 int tx_pin = D1;
 int rx_pin = D2;
-const unsigned long SEND_THROTTLE = 60 * 60 * 1000; // 60 mins
 
-
+#ifdef DEVMODE
+const unsigned long SEND_THROTTLE = 1; // 60 mins
 SoftwareSerial InputSerial(rx_pin, tx_pin);
+CoReader coReader = CoReader(Serial, Serial);
+#else
+const unsigned long SEND_THROTTLE = 60 * 60 * 1000; // 60 mins
+SoftwareSerial InputSerial(rx_pin, tx_pin);
+CoReader coReader = CoReader(InputSerial, Serial);
+#endif
 
 const ushort collector_temp_id = 0x1701;  // alternative: 0x1742?
 const ushort water_temp_id = 0x1702;      // alternative: 0x1743?
@@ -180,7 +188,6 @@ void uploadData(const Payload& payload) {
 ushort buffer[300];
 unsigned long last_sent = ULONG_MAX;
 
-CoReader coReader = CoReader(InputSerial, Serial);
 
 void loop() {
     int len = coReader.readTo(buffer, 300);
