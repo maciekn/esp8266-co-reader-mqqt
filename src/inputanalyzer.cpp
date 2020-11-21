@@ -1,5 +1,10 @@
 #include "inputanalyzer.h"
 
+const ushort collector_temp_id = 0x1701;  // alternative: 0x1742?
+const ushort water_temp_id = 0x1702;      // alternative: 0x1743?
+const ushort timestamp_id = 0x1620;
+const ushort sth_else_id = 0x1B98;
+
 boolean handleWaterTemp(ushort identifier, ushort value, Payload& payload) {
     payload.water_temp = (short)value;
     return true;

@@ -3,11 +3,6 @@
 
 #include "inputdecoder.h"
 
-const ushort collector_temp_id = 0x1701;  // alternative: 0x1742?
-const ushort water_temp_id = 0x1702;      // alternative: 0x1743?
-const ushort timestamp_id = 0x1620;
-const ushort sth_else_id = 0x1B98;
-
 struct Payload {
     short collector_temp = 0;
     short water_temp = 0;

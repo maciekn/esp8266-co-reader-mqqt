@@ -67,7 +67,7 @@ void loadStoredData() {
 }
 
 void initalizeWiFiManager() {
-    WiFiManagerParameter custom_channel_no("channel", "MQQT Channel",
+    WiFiManagerParameter custom_channel_no("channel", "Channel",
                                            myChannelNumber, 20);
     WiFiManagerParameter custom_api_key("apiKey", "API Key", myWriteAPIKey, 32);
 
