@@ -164,6 +164,7 @@ unsigned long last_sent = ULONG_MAX;
 
 void loop() {
     Payload p;
+    // TODO: support for partial reads
     if (analyzer.serve(p) != 0) {
         unsigned long current_timestamp = millis();
         if ((last_sent + SEND_THROTTLE) < current_timestamp ||
